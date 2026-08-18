@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cronómetro</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  .timer {
+    width: min(100%, 520px);
+    text-align: center;
+    background: #000;
+    color: #ff2020;
+  }
+  #display {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: clamp(52px, 13vw, 96px);
+    line-height: 1;
+    letter-spacing: .02em;
+    text-shadow: 0 0 12px rgba(255,0,0,.12);
+    user-select: none;
+    margin-bottom: 24px;
+  }
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button {
+    border: 1px solid #ff2020;
+    background: #090000;
+    color: #ff2020;
+    border-radius: 7px;
+    padding: 9px 15px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { background: #190000; }
+  button:active { transform: translateY(1px); }
+</style>
+</head>
+<body>
+  <main class="timer" aria-label="Cronómetro">
+    <div id="display">00:00:00</div>
+    <div class="buttons">
+      <button id="start">▶ Iniciar</button>
+      <button id="pause">⏸ Pausar</button>
+      <button id="reset">↻ Reiniciar</button>
+    </div>
+  </main>
+
+<script>
+(() => {
+  let elapsed = 0;
+  let startedAt = null;
+  let raf = null;
+
+  const display = document.getElementById('display');
+  const startBtn = document.getElementById('start');
+  const pauseBtn = document.getElementById('pause');
+  const resetBtn = document.getElementById('reset');
+
+  function format(ms) {
+    const total = Math.floor(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+  }
+
+  function render() {
+    const current = startedAt === null ? elapsed : elapsed + (performance.now() - startedAt);
+    display.textContent = format(current);
+    if (startedAt !== null) raf = requestAnimationFrame(render);
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (startedAt === null) {
+      startedAt = performance.now();
+      render();
+    }
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    if (startedAt !== null) {
+      elapsed += performance.now() - startedAt;
+      startedAt = null;
+      cancelAnimationFrame(raf);
+      render();
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    startedAt = null;
+    elapsed = 0;
+    cancelAnimationFrame(raf);
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
